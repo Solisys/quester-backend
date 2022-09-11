@@ -17,7 +17,14 @@ class AuthConfig:
         "tokenURL": "https://oauth2.googleapis.com/token",
         "emailURL": "https://www.googleapis.com/oauth2/v3/userinfo?",
         "auth_client_id": '219657477408-tmus1ta8jgbp7mda4n1heniu3i20ssrl.apps.googleusercontent.com'
-    }
+    },
+
+    database = { 
+        "rds_host": 'quester-db.cy3wbyr6lcxh.us-east-1.rds.amazonaws.com',
+        "user_name": 'root',
+        "password": 'quester-db',
+        "db_name": 'sys'
+        }
 
 
 class FrontEndConfig:
