@@ -7,6 +7,8 @@ def validate_discounts_payload(payload):
         "email": {'type': 'string'},
         "name": {'type': 'string'},
         "role": {'type': 'string'},
+        "sapId": {'required': False, 'type': 'int'},
+        "classId" : {'required': False, 'type': 'int'}
     } 
     v = Validator(schema, require_all=True)
 
