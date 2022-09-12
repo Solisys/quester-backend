@@ -46,65 +46,57 @@ def lambda_handler(event, context):
             logger.debug(result)
             return api_response.generate_response(status_code=400, response_body=result)
     
-    email = body['email']
-    name = body['name']
-    role = body['role']
-    sap_id = body['sapId']
-    class_id = body['classId']
-
-    user = pd.DataFrame([{
-            'email': email,
-            'name': name,
-            'role': role,
-            'status': 'active'
-        }])
-
+    user_id = body['userId']
+    query = f'select * from sys.users where id = {user_id}'
+    
     try:
-        user.to_sql(con=conn, name='users', if_exists='append', index=False)
+        user = pd.read_sql(query, conn)
     except:
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
 
-    query = f"select user_id from sys.users where email = '{email}'"
+    if user.empty:
+        message = {"message": Const.INVALID_USER}
+        return api_response.generate_response(status_code=404, response_body=message)
+    
+    result = user.to_dict('records')
+    if result[0]['role'] == 'student':
 
-    try:    
-        result = pd.read_sql(query, conn)
-        result = result.to_dict('records')
-        user_id = result[0]['user_id']
-    except:
-        api_traceback.generate_system_traceback()
-        message = {"message": Const.DB_FAILURE}
-        return api_response.generate_response(status_code=500, response_body=message)
-
-    if role == 'teacher':
-        for classes in class_id:
-            teacher = pd.DataFrame([{
-                'user_id': user_id,
-                'class_id': classes,
-            }])
-            try:
-                user.to_sql(con=conn, name='teacher_class', if_exists='append', index=False)
-            except:
-                api_traceback.generate_system_traceback()
-                message = {"message": Const.DB_FAILURE}
-                return api_response.generate_response(status_code=500, response_body=message)
-
-
-    if role == 'student':
-        student = pd.DataFrame([{
-                'user_id': user_id,
-                'class_id': class_id,
-                'sap_id': sap_id
-            }])
+        query = f'select * from sys.students where id = {user_id}'
+    
         try:
-            user.to_sql(con=conn, name='students', if_exists='append', index=False)
+            student = pd.read_sql(query, conn)
+            student = student.to_dict('records')
         except:
-            api_traceback.generate_system_traceback()
+            message = {"message": Const.DB_FAILURE}
+            return api_response.generate_response(status_code=500, response_body=message)
+        
+        user = {
+            "user_id": student[0]['user_id'],
+            "class_id": student[0]['class_id'],
+            "name": result[0]['name'],
+            "email": result[0]['email']
+        }
+    else:
+        
+        query = f'select * from sys.teacher_class where id = {user_id}'
+    
+        try:
+            teachers = pd.read_sql(query, conn)
+            teachers = teachers.to_dict('records')
+        except:
             message = {"message": Const.DB_FAILURE}
             return api_response.generate_response(status_code=500, response_body=message)
 
-    message = {
-        'user_id': user_id,
-        'message': Const.SUCCESS
+        class_id = []
+        for teacher in teachers:
+            class_id.append(teacher['class_id'])
+
+        user = {
+            "user_id": result[0]['id'],
+            "name": result[0]['name'],
+            "email": result[0]['email'],
+            "class_id": class_id
         }
-    return api_response.generate_response(status_code=201, response_body=message)
+    
+    return api_response.generate_response(status_code=200, response_body=user)
