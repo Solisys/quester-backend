@@ -83,7 +83,7 @@ def lambda_handler(event, context):
                 'class_id': classes,
             }])
             try:
-                user.to_sql(con=conn, name='teacher_class', if_exists='append', index=False)
+                teacher.to_sql(con=conn, name='teacher_class', if_exists='append', index=False)
             except:
                 api_traceback.generate_system_traceback()
                 message = {"message": Const.DB_FAILURE}
@@ -97,7 +97,7 @@ def lambda_handler(event, context):
                 'sap_id': sap_id
             }])
         try:
-            user.to_sql(con=conn, name='students', if_exists='append', index=False)
+            student.to_sql(con=conn, name='students', if_exists='append', index=False)
         except:
             api_traceback.generate_system_traceback()
             message = {"message": Const.DB_FAILURE}
