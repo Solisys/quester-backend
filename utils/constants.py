@@ -52,3 +52,4 @@ class Const:
     MISSING_PARA = "Parameters not provided in inputs"
     RECORD_PRESENT = "Record is already present"
     EXISTING_USER = "Cannot modify existing user"
+    INVALID_USER = "User does not exist in domain"
