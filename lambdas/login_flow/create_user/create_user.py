@@ -54,7 +54,7 @@ def lambda_handler(event, context):
 
     user = pd.DataFrame([{
             'email': email,
-            'name': transaction_id,
+            'name': name,
             'role': role,
             'status': 'active'
         }])
