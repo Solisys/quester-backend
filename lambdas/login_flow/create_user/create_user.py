@@ -49,14 +49,63 @@ def lambda_handler(event, context):
     email = body['email']
     name = body['name']
     role = body['role']
-    sapId = body['sapId']
-    classId = body['classId']
-    
+    sap_id = body['sapId']
+    class_id = body['classId']
+
+    user = pd.DataFrame([{
+            'email': email,
+            'name': transaction_id,
+            'role': role,
+            'status': 'active'
+        }])
 
     try:
-        result.to_sql(con=conn, name='users', if_exists='append', index=False)
+        user.to_sql(con=conn, name='users', if_exists='append', index=False)
     except:
         api_traceback.generate_system_traceback()
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
-    
+
+    query = f"select user_id from sys.users where email = '{email}'"
+
+    try:    
+        result = pd.read_sql(query, conn)
+        result = result.to_dict('records')
+        user_id = result[0]['user_id']
+    except:
+        api_traceback.generate_system_traceback()
+        message = {"message": Const.DB_FAILURE}
+        return api_response.generate_response(status_code=500, response_body=message)
+
+    if role == 'teacher':
+        for classes in class_id:
+            teacher = pd.DataFrame([{
+                'user_id': user_id,
+                'class_id': classes,
+            }])
+            try:
+                user.to_sql(con=conn, name='teacher_class', if_exists='append', index=False)
+            except:
+                api_traceback.generate_system_traceback()
+                message = {"message": Const.DB_FAILURE}
+                return api_response.generate_response(status_code=500, response_body=message)
+
+
+    if role == 'student':
+        student = pd.DataFrame([{
+                'user_id': user_id,
+                'class_id': class_id,
+                'sap_id': sap_id
+            }])
+        try:
+            user.to_sql(con=conn, name='students', if_exists='append', index=False)
+        except:
+            api_traceback.generate_system_traceback()
+            message = {"message": Const.DB_FAILURE}
+            return api_response.generate_response(status_code=500, response_body=message)
+
+    message = {
+        'user_id': user_id,
+        'message': Const.SUCCESS
+        }
+    return api_response.generate_response(status_code=201, response_body=message)
