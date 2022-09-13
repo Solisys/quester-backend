@@ -4,7 +4,6 @@ from datetime import datetime
 
 def validate_discounts_payload(payload):
     schema = {
-        "email": {'type': 'string', 'required': True},
         "name": {'type': 'string', 'required': True},
         "role": {'type': 'string', 'required': True},
         "sapId": {'required': False},

@@ -1,3 +1,4 @@
+import imp
 import json
 from os import access
 from urllib import response
@@ -13,6 +14,7 @@ from utils import generate_response as api_response
 from utils import generate_traceback as api_traceback
 from utils.global_config import AuthConfig
 import create_user_helper as helper
+from utils.authentication import authenticate
 
 rds_host = AuthConfig.database['rds_host']
 user_name = AuthConfig.database['user_name']
@@ -31,6 +33,15 @@ except:
 
 def lambda_handler(event, context):
 
+    jwt_token = event.get("headers").get("Authorization").split('Bearer ')[1]
+
+    try:
+        email = authenticate(jwt_token, conn)
+    except Exception as e:
+        message = {"message": str(e)}
+        return api_response.generate_response(status_code=401, response_body=message)
+
+
     if isinstance(event.get("body"), type(None)) or not event.get("body"):
         message = {
             "message": f"Payload missing in the input"
@@ -46,7 +57,6 @@ def lambda_handler(event, context):
             logger.debug(result)
             return api_response.generate_response(status_code=400, response_body=result)
     
-    email = body['email']
     name = body['name']
     role = body['role']
     sap_id = body['sapId']

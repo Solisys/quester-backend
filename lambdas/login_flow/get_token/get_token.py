@@ -7,6 +7,8 @@ import logging
 import sys
 import pandas as pd
 
+
+from utils.authentication import check
 from sqlalchemy import create_engine
 from utils.constants import Const
 from utils import generate_response as api_response
@@ -43,9 +45,14 @@ def lambda_handler(event, context):
     data=request.json()
     id_token = data['id_token']
     access_token = data['access_token']
-    decode = jwt.decode(id_token, options={"verify_signature": False})
     
-    email = decode['email']
+    try:
+        email = check(id_token, conn)
+    except:
+        api_traceback.generate_system_traceback()
+        message = {"message": Const.DB_FAILURE}
+        logger.warning(Const.DB_FAILURE)
+        return api_response.generate_response(status_code=500, response_body=message)
 
     query = f"select * from sys.users where email = '{email}'"
     
