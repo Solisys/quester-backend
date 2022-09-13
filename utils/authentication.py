@@ -23,7 +23,7 @@ def authenticate(jwt_token, conn):
         logger.error(e)
         raise ValueError(AuthConst.INVALID_TOKEN)
 
-    query = f"select * from sys.username where username = {decoded_token['username']}"
+    query = f"select * from sys.username where username = {decoded_token['userId']}"
     records = pd.read_sql(query, conn)
 
     if len(records) == 0:
@@ -43,14 +43,19 @@ def check(jwt_token, conn):
     except (jwt.InvalidSignatureError, jwt.DecodeError) as e:
         logger.error(e)
         raise ValueError(AuthConst.INVALID_TOKEN)
+        
+    print(decoded_token)
+    username = decoded_token['cognito:username']
+    print(username)
     
-    query = f"select * from sys.username where username = {decoded_token['username']}"
+    query = f"select * from sys.username where username = '{username}'"
     records = pd.read_sql(query, conn)
+    print(decoded_token['email'])
 
     if len(records) == 0:
         data = pd.DataFrame([{
-            'username': decoded_token['username'],
-            'email': decoded_token['emailId']
+            'username': username,
+            'email': decoded_token['email']
         }])
         try:
             data.to_sql(con=conn, name='username', if_exists='append', index=False)
