@@ -53,3 +53,4 @@ class Const:
     RECORD_PRESENT = "Record is already present"
     EXISTING_USER = "Cannot modify existing user"
     INVALID_USER = "User does not exist in domain"
+    USER_EXISTS = "User already exists"

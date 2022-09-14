@@ -56,7 +56,6 @@ def lambda_handler(event, context):
 
     query = f"select * from sys.users where email = '{email}'"
     
-    print(query)
     try:
         data = pd.read_sql(query, conn)
     except:

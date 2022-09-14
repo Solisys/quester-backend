@@ -41,6 +41,20 @@ def lambda_handler(event, context):
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
 
+    query = f"select * from sys.users where email = '{email}'"
+    
+    try:
+        data = pd.read_sql(query, conn)
+    except:
+        message = {"message": Const.DB_FAILURE}
+        logger.warning(Const.DB_FAILURE)
+        return api_response.generate_response(status_code=500, response_body=message)
+
+    if not data.empty:
+        message = {"message": Const.USER_EXISTS}
+        logger.warning(Const.USER_EXISTS)
+        return api_response.generate_response(status_code=409, response_body=message)
+
 
     if isinstance(event.get("body"), type(None)) or not event.get("body"):
         message = {
@@ -48,7 +62,6 @@ def lambda_handler(event, context):
         }
         logger.warning(message.get("message"))
         return api_response.generate_response(status_code=400, response_body=message)
-
     else:
         body = json.loads(event.get("body", dict()))
         result = helper.validate_discounts_payload(body)
@@ -98,9 +111,7 @@ def lambda_handler(event, context):
                 api_traceback.generate_system_traceback()
                 message = {"message": Const.DB_FAILURE}
                 return api_response.generate_response(status_code=500, response_body=message)
-
-
-    if role == 'student':
+    elif role == 'student':
         student = pd.DataFrame([{
                 'user_id': user_id,
                 'class_id': class_id,
@@ -112,6 +123,10 @@ def lambda_handler(event, context):
             api_traceback.generate_system_traceback()
             message = {"message": Const.DB_FAILURE}
             return api_response.generate_response(status_code=500, response_body=message)
+    else:
+        message = {"message": "Invalid role"}
+        return api_response.generate_response(status_code=400, response_body=message)
+
 
     message = {
         'user_id': user_id,
