@@ -37,6 +37,7 @@ def lambda_handler(event, context):
 
     try:
         email = authenticate(jwt_token, conn)
+        print('done')
     except Exception as e:
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
