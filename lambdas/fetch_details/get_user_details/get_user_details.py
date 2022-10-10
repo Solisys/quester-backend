@@ -13,6 +13,7 @@ from utils import generate_response as api_response
 from utils import generate_traceback as api_traceback
 from utils.global_config import AuthConfig
 import get_user_details_helper as helper
+from utils.authentication import authenticate
 
 rds_host = AuthConfig.database['rds_host']
 user_name = AuthConfig.database['user_name']
@@ -31,23 +32,16 @@ except:
 
 def lambda_handler(event, context):
 
-    if isinstance(event.get("body"), type(None)) or not event.get("body"):
-        message = {
-            "message": f"Payload missing in the input"
-        }
-        logger.warning(message.get("message"))
-        return api_response.generate_response(status_code=400, response_body=message)
+    jwt_token = event.get("headers").get("Authorization").split('Bearer ')[1]
 
-    else:
-        body = json.loads(event.get("body", dict()))
-        result = helper.validate_discounts_payload(body)
-        if result != "valid":
-            logger.info("Input payload is invalid")
-            logger.debug(result)
-            return api_response.generate_response(status_code=400, response_body=result)
+    try:
+        email = authenticate(jwt_token, conn)
+        print('done')
+    except Exception as e:
+        message = {"message": str(e)}
+        return api_response.generate_response(status_code=401, response_body=message)
     
-    user_id = body['userId']
-    query = f'select * from sys.users where id = {user_id}'
+    query = f'select * from sys.users where email = {email}'
     
     try:
         user = pd.read_sql(query, conn)
@@ -60,6 +54,8 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=404, response_body=message)
     
     result = user.to_dict('records')
+    user_id = result[0]['user_id']
+    
     if result[0]['role'] == 'student':
 
         query = f'select * from sys.students where id = {user_id}'
@@ -75,10 +71,10 @@ def lambda_handler(event, context):
             "user_id": student[0]['user_id'],
             "class_id": student[0]['class_id'],
             "name": result[0]['name'],
-            "email": result[0]['email']
+            "email": result[0]['email'],
+            "role": "student"
         }
     else:
-        
         query = f'select * from sys.teacher_class where id = {user_id}'
     
         try:
@@ -90,13 +86,14 @@ def lambda_handler(event, context):
 
         class_id = []
         for teacher in teachers:
-            class_id.append(teacher['class_id'])
+            class_id.append([teacher['class_id']])
 
         user = {
-            "user_id": result[0]['id'],
+            "user_id": result[0]['user_id'],
             "name": result[0]['name'],
             "email": result[0]['email'],
-            "class_id": class_id
+            "class_id": class_id,
+            "role": "teacher"
         }
     
     return api_response.generate_response(status_code=200, response_body=user)

@@ -54,3 +54,8 @@ class Const:
     EXISTING_USER = "Cannot modify existing user"
     INVALID_USER = "User does not exist in domain"
     USER_EXISTS = "User already exists"
+    INVALID_CREDENTIALS = "Invalid credentials"
+    INVALID_INPUT = "Invalid input"
+    INVALID_REQUEST = "Invalid request"
+    INVALID_EMAIL = "Invalid email"
+    UNAUTHORIZED = "Unauthorized to access this resource"
