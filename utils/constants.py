@@ -59,3 +59,6 @@ class Const:
     INVALID_REQUEST = "Invalid request"
     INVALID_EMAIL = "Invalid email"
     UNAUTHORIZED = "Unauthorized to access this resource"
+    INVALID_SESSION = "Invalid session"
+    INVALID_COUNT = "Invalid count"
+    INVALID_QUESTION = "Invalid question"
