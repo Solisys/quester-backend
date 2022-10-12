@@ -104,7 +104,8 @@ def lambda_handler(event, context):
         'correct_ans': question.get('correctAns'),
         'description': question.get('description'),
         'session_id': session['session_id'].iloc[0],
-        'tag': question.get('tag', None)
+        'tag': question.get('tag', None),
+        'time': question.get('time', None)
         }])
         try:
             question_sql.to_sql('sys.questions', conn, if_exists='append', index=False)

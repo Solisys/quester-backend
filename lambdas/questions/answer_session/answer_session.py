@@ -140,6 +140,7 @@ def lambda_handler(event, context):
         'question_id': question['question_id'],
         'user_answer': question['user_answer'],
         'correct_answer': correct_answer,
+        'time': question['time']
         }])
 
         try:
