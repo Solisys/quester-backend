@@ -30,24 +30,8 @@ except:
 
 
 def lambda_handler(event, context):
-
-    if isinstance(event.get("body"), type(None)) or not event.get("body"):
-        message = {
-            "message": f"Payload missing in the input"
-        }
-        logger.warning(message.get("message"))
-        return api_response.generate_response(status_code=400, response_body=message)
-
-    else:
-        body = json.loads(event.get("body", dict()))
-        result = helper.validate_discounts_payload(body)
-        if result != "valid":
-            logger.info("Input payload is invalid")
-            logger.debug(result)
-            return api_response.generate_response(status_code=400, response_body=result)
     
-    class_id = body['classId']
-    query = f'select * from sys.class where id = {class_id}'
+    query = f'select * from sys.class'
     
     try:
         class_rec = pd.read_sql(query, conn)
