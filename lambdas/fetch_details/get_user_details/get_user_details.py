@@ -12,7 +12,6 @@ from utils.constants import Const
 from utils import generate_response as api_response
 from utils import generate_traceback as api_traceback
 from utils.global_config import AuthConfig
-import get_user_details_helper as helper
 from utils.authentication import authenticate
 
 rds_host = AuthConfig.database['rds_host']
