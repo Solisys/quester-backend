@@ -62,3 +62,4 @@ class Const:
     INVALID_SESSION = "Invalid session"
     INVALID_COUNT = "Invalid count"
     INVALID_QUESTION = "Invalid question"
+    NO_RESPONSES = "No responses found"

@@ -57,15 +57,6 @@ def lambda_handler(event, context):
     result = user.to_dict('records')
     user_id = result[0]['user_id']
 
-    query = f'select * from sys.users where email = {user_id}'
-    try:
-        user = pd.read_sql(query, conn)
-    except:
-        message = {"message": Const.DB_FAILURE}
-        return api_response.generate_response(status_code=500, response_body=message)
-
-    class_id = user[0]['class_id']
-
     if isinstance(event.get("body"), type(None)) or not event.get("body"):
         message = {
             "message": f"Payload missing in the input"
@@ -88,6 +79,15 @@ def lambda_handler(event, context):
         message = {"message": Const.INVALID_USER}
         return api_response.generate_response(status_code=404, response_body=message)
     
+    query = f'select * from sys.students where user_id = {user_id}'
+    try:
+        user = pd.read_sql(query, conn)
+    except:
+        message = {"message": Const.DB_FAILURE}
+        return api_response.generate_response(status_code=500, response_body=message)
+
+    class_id = user[0]['class_id']
+
     query = f'select * from sys.sessions where secret = {secret} and access = {class_id}'
 
     try:
