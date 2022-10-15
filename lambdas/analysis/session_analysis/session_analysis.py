@@ -140,4 +140,5 @@ def lambda_handler(event, context):
 
     body = {"data" : data, "count": count, "avg_time": avg_time}
     
-    return api_response.generate_response(status_code=200, response_body=questions)
+    return api_response.generate_response(status_code=200, response_body=body)
+    
