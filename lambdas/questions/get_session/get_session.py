@@ -75,9 +75,9 @@ def lambda_handler(event, context):
     secret = body['secret']
     
     result = user.to_dict('records')
-    # if result[0]['role'] == 'teacher':
-    #     message = {"message": Const.INVALID_USER}
-    #     return api_response.generate_response(status_code=404, response_body=message)
+    if result[0]['role'] == 'teacher':
+        message = {"message": Const.INVALID_USER}
+        return api_response.generate_response(status_code=404, response_body=message)
     
     query = f'select * from sys.students where user_id = {user_id}'
     try:

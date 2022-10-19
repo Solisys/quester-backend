@@ -4,9 +4,9 @@ from datetime import datetime
 
 def validate_payload(payload):
     schema = {
-        'count': {'type': 'int'},
+        'count': {'type': 'integer'},
         'questions': {'type': 'list'},
-        'sessionId': {'type': 'int'}
+        'sessionId': {'type': 'integer'}
     }
     v = Validator(schema, require_all=True)
 
