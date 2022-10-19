@@ -4,8 +4,7 @@ from datetime import datetime
 
 def validate_payload(payload):
     schema = {
-        'sessionId': {'type': 'int'},
-        'accessBy': {'type': 'int'},
+        'accessBy': {'type': 'integer'},
         'secret': {'type': 'string'},
         'questions': {'type': 'list'}
     } 
