@@ -40,7 +40,7 @@ def lambda_handler(event, context):
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
     
-    query = f'select * from sys.users where email = {email}'
+    query = f'select * from sys.users where email = "{email}"'
     
     try:
         user = pd.read_sql(query, conn)
@@ -74,24 +74,10 @@ def lambda_handler(event, context):
             "role": "student"
         }
     else:
-        query = f'select * from sys.teacher_class where id = {user_id}'
-    
-        try:
-            teachers = pd.read_sql(query, conn)
-            teachers = teachers.to_dict('records')
-        except:
-            message = {"message": Const.DB_FAILURE}
-            return api_response.generate_response(status_code=500, response_body=message)
-
-        class_id = []
-        for teacher in teachers:
-            class_id.append([teacher['class_id']])
-
         user = {
             "user_id": result[0]['user_id'],
             "name": result[0]['name'],
             "email": result[0]['email'],
-            "class_id": class_id,
             "role": "teacher"
         }
     

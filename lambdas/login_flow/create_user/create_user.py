@@ -100,19 +100,7 @@ def lambda_handler(event, context):
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
 
-    if role == 'teacher':
-        for classes in class_id:
-            teacher = pd.DataFrame([{
-                'user_id': user_id,
-                'class_id': classes,
-            }])
-            try:
-                teacher.to_sql(con=conn, name='teacher_class', if_exists='append', index=False)
-            except:
-                api_traceback.generate_system_traceback()
-                message = {"message": Const.DB_FAILURE}
-                return api_response.generate_response(status_code=500, response_body=message)
-    elif role == 'student':
+    if role == 'student':
         student = pd.DataFrame([{
                 'user_id': user_id,
                 'class_id': class_id,
