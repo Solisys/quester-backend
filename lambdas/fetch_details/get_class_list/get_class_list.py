@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=500, response_body=message)
 
     if class_rec.empty:
-        message = {"message": Const.INVALID_USER}
+        message = {"message": Const.NO_RESPONSES}
         return api_response.generate_response(status_code=404, response_body=message)
     
     result = class_rec.to_dict('records')
