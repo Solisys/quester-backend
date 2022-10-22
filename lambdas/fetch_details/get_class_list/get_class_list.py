@@ -39,7 +39,7 @@ def lambda_handler(event, context):
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
 
-    query = f'select * from sys.class'
+    query = f'select class_id, stream, year from sys.class'
     
     try:
         class_rec = pd.read_sql(query, conn)

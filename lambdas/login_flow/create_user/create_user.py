@@ -73,7 +73,7 @@ def lambda_handler(event, context):
     
     name = body['name']
     role = body['role']
-    sap_id = body['sapId']
+    sap_id = body.get('sapId', None)
     class_id = body['classId']
 
     user = pd.DataFrame([{
@@ -112,10 +112,9 @@ def lambda_handler(event, context):
             api_traceback.generate_system_traceback()
             message = {"message": Const.DB_FAILURE}
             return api_response.generate_response(status_code=500, response_body=message)
-    else:
+    elif role != 'teacher':
         message = {"message": "Invalid role"}
         return api_response.generate_response(status_code=400, response_body=message)
-
 
     message = {
         'user_id': user_id,

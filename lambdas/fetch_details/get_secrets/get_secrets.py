@@ -1,7 +1,7 @@
 import json
 from os import access
 from urllib import response
-import requests 
+import requests
 import jwt
 import logging
 import sys
@@ -30,7 +30,6 @@ except:
 
 
 def lambda_handler(event, context):
-
     jwt_token = event.get("headers").get("Authorization").split('Bearer ')[1]
 
     try:
@@ -39,47 +38,19 @@ def lambda_handler(event, context):
     except Exception as e:
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
-    
-    query = f'select * from sys.users where email = "{email}"'
-    
+
+    query = f'select secret from sys.sessions'
+
     try:
-        user = pd.read_sql(query, conn)
+        secret = pd.read_sql(query, conn)
     except:
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
 
-    if user.empty:
-        message = {"message": Const.INVALID_USER}
+    if secret.empty:
+        message = {"message": Const.NO_RESPONSES}
         return api_response.generate_response(status_code=404, response_body=message)
-    
-    result = user.to_dict('records')
-    user_id = result[0]['user_id']
-    
-    if result[0]['role'] == 'student':
 
-        query = f'select * from sys.students where user_id = {user_id}'
-    
-        try:
-            student = pd.read_sql(query, conn)
-            student = student.to_dict('records')
-        except:
-            message = {"message": Const.DB_FAILURE}
-            return api_response.generate_response(status_code=500, response_body=message)
-        
-        user = {
-            "user_id": student[0]['user_id'],
-            "class_id": student[0]['class_id'],
-            "name": result[0]['name'],
-            "sap_id": student[0]['sap_id'],
-            "email": result[0]['email'],
-            "role": "student"
-        }
-    else:
-        user = {
-            "user_id": result[0]['user_id'],
-            "name": result[0]['name'],
-            "email": result[0]['email'],
-            "role": "teacher"
-        }
-    
-    return api_response.generate_response(status_code=200, response_body=user)
+    result = secret.to_dict('records')
+
+    return api_response.generate_response(status_code=200, response_body=result)
