@@ -39,18 +39,18 @@ def lambda_handler(event, context):
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
 
-    query = f'select distinct(secret) from sys.sessions'
+    query = f'select distinct(tag) from sys.questions'
 
     try:
-        secret = pd.read_sql(query, conn)
+        tag = pd.read_sql(query, conn)
     except:
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
 
-    if secret.empty:
+    if tag.empty:
         message = {"message": Const.NO_RESPONSES}
         return api_response.generate_response(status_code=404, response_body=message)
 
-    result = secret.to_dict('records')
+    result = tag.to_dict('records')
 
     return api_response.generate_response(status_code=200, response_body=result)
