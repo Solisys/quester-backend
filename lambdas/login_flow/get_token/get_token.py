@@ -70,7 +70,7 @@ def lambda_handler(event, context):
 
     role = 'teacher'
     if 'nmims.edu.in' in email:
-        role = 'teacher'
+        role = 'student'
 
     if len(data.index) == 0:
         new_user = True
