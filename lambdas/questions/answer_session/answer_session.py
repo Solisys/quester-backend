@@ -76,9 +76,9 @@ def lambda_handler(event, context):
     count = body['count']
 
     result = user.to_dict('records')
-    # if result[0]['role'] == 'teacher':
-    #     message = {"message": Const.INVALID_USER}
-    #     return api_response.generate_response(status_code=404, response_body=message)
+    if result[0]['role'] == 'teacher':
+        message = {"message": Const.INVALID_USER}
+        return api_response.generate_response(status_code=404, response_body=message)
 
     query = f'select * from sys.students where user_id = {user_id}'
     try:
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
         message = {"message": Const.UNAUTHORIZED}
         return api_response.generate_response(status_code=404, response_body=message)
 
-    query = f'select * from sys.responses where session_id = {session_id} and user_id = {user_id}'
+    query = f'select * from sys.responses join sys.questions where questions.session_id = {session_id} and responses.user_id = {user_id}'
     try:
         session = pd.read_sql(query, conn)
     except:
