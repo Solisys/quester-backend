@@ -74,7 +74,7 @@ def lambda_handler(event, context):
     name = body['name']
     role = body['role']
     sap_id = body.get('sapId', None)
-    class_id = body['classId']
+    class_id = body.get('classId', None)
 
     user = pd.DataFrame([{
             'email': email,
