@@ -39,7 +39,23 @@ def lambda_handler(event, context):
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
 
-    query = f'select distinct(tag) from sys.questions'
+    query = f'select * from sys.users where email = "{email}"'
+
+    try:
+        user = pd.read_sql(query, conn)
+    except:
+        message = {"message": Const.DB_FAILURE}
+        return api_response.generate_response(status_code=500, response_body=message)
+
+    if user.empty:
+        message = {"message": Const.INVALID_USER}
+        return api_response.generate_response(status_code=404, response_body=message)
+
+    result = user.to_dict('records')
+    user_id = result[0]['user_id']
+
+    query = f'select distinct(questions.tag) from sys.questions join sys.sessions on questions.session_id = ' \
+            f'sessions.session_id where sessions.user_id = {user_id}'
 
     try:
         tag = pd.read_sql(query, conn)
