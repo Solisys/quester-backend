@@ -74,7 +74,8 @@ def lambda_handler(event, context):
     secret = body['secret']
 
     result = user.to_dict('records')
-    if result[0]['role'] == 'teacher':
+
+    if result[0]['role'] == 'student':
         message = {"message": Const.INVALID_USER}
         return api_response.generate_response(status_code=404, response_body=message)
 
