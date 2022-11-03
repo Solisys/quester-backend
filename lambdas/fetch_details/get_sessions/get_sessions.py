@@ -54,7 +54,8 @@ def lambda_handler(event, context):
     result = user.to_dict('records')
     user_id = result[0]['user_id']
 
-    query = f'select * from sys.sessions where user_id = {user_id}'
+    query = f'select sessions.secret, sessions.created_on, class.stream, class.year from sys.sessions join sys.class ' \
+            f'on class.class_id = sessions.access_by where sessions.user_id = {user_id}'
 
     try:
         sessions = pd.read_sql(query, conn)
