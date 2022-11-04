@@ -101,21 +101,39 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=404, response_body=message)
 
     data = pd.DataFrame()
+    index = 0
     if tag:
         tags = list(responses['tag'].unique())
         for tag in tags:
-            temp = helper.analysis(tag, responses, 'tag')
+            temp = helper.analysis(tag, responses, 'tag', index)
             data = pd.concat([data, temp])
+            index += 1
     else:
         sessions = list(responses['secret'].unique())
         for question in sessions:
-            temp = helper.analysis(question, responses, 'secret')
+            temp = helper.analysis(question, responses, 'secret', index)
             data = pd.concat([data, temp])
+            index += 1
+
+    if "tag" in data.columns:
+        data.rename(columns={'tag': 'secret'}, inplace=True)
 
     avg_time = np.nansum(data['avg_time'])
     count = np.nansum(data['count'])
+    most_time = data[data.avg_time == data.avg_time.max()].to_json(orient='records')
+    least_time = data[data.avg_time == data.avg_time.min()].to_json(orient='records')
+    most_correct = data[data.correct == data.correct.max()].to_json(orient='records')
+    least_correct = data[data.correct == data.correct.min()].to_json(orient='records')
     data = data.to_json(orient='records')
 
-    body = {"data": data, "count": count, "avg_time": avg_time}
+    body = {
+        "data": json.loads(data),
+        "count": count,
+        "avg_time": avg_time,
+        "mostCorrect": json.loads(most_correct),
+        "mostTime": json.loads(most_time),
+        "leastCorrect": json.loads(least_correct),
+        "leastTime": json.loads(least_time)
+    }
 
     return api_response.generate_response(status_code=200, response_body=body)

@@ -24,10 +24,12 @@ def validate_payload(payload):
         return v.errors
 
 
-def analysis(check, responses, type):
-    temp = pd.DataFrame([check], columns=[type])
-    correct = responses[(responses[type] == check) & (responses['correct_answer'] == 1)]
-    incorrect = responses[(responses[type] == check) & (responses['correct_answer'] == 0)]
+def analysis(check, responses, category):
+    temp = pd.DataFrame([check], columns=[category])
+    correct = responses[(responses[category] == check) & (responses['correct_answer'] == 1)]
+    correct.reset_index(inplace = True)
+    incorrect = responses[(responses[category] == check) & (responses['correct_answer'] == 0)]
+    incorrect.reset_index(inplace=True)
     if not correct.empty:
         temp['correct'] = int(correct['count'])
         temp['correct_time'] = correct['time']
