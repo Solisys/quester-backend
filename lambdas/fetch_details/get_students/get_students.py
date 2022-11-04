@@ -7,14 +7,13 @@ import jwt
 import logging
 import sys
 import pandas as pd
-import numpy as np
 
 from sqlalchemy import create_engine
 from utils.constants import Const
 from utils import generate_response as api_response
 from utils import generate_traceback as api_traceback
 from utils.global_config import AuthConfig
-import session_analysis_helper as helper
+import get_students_helper as helper
 from utils.authentication import authenticate
 
 rds_host = AuthConfig.database['rds_host']
@@ -55,10 +54,7 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=404, response_body=message)
 
     result = user.to_dict('records')
-
-    if result[0]['role'] == 'student':
-        message = {"message": Const.INVALID_USER}
-        return api_response.generate_response(status_code=404, response_body=message)
+    user_id = result[0]['user_id']
 
     if isinstance(event.get("body"), type(None)) or not event.get("body"):
         message = {
@@ -75,60 +71,19 @@ def lambda_handler(event, context):
             logger.debug(result)
             return api_response.generate_response(status_code=400, response_body=result)
 
-    secret = body['sessionSecret']
-    tag = body.get('tag', None)
+    if result[0]['role'] == 'student':
+        message = {"message": Const.INVALID_USER}
+        return api_response.generate_response(status_code=404, response_body=message)
 
-    query = f"select * from sys.sessions where secret = '{secret}'"
+    class_id = body['classId']
 
+    query = f'select * from sys.students where class_id = {class_id}'
     try:
-        session = pd.read_sql(query, conn)
+        students = pd.read_sql(query, conn)
     except:
         message = {"message": Const.DB_FAILURE}
         return api_response.generate_response(status_code=500, response_body=message)
 
-    if session.empty:
-        message = {"message": Const.INVALID_SESSION}
-        return api_response.generate_response(status_code=404, response_body=message)
+    students = students.to_dict('records')
 
-    session_id = session['session_id'].values[0]
-
-    if tag:
-        query = f"select questions.tag, responses.correct_answer, count(responses.correct_answer) as count, " \
-                f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where questions.session_id = {session_id} group by questions.tag, " \
-                f"responses.correct_answer"
-    else:
-        query = f"select questions.description, responses.correct_answer, count(responses.correct_answer) as count, " \
-                f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where questions.session_id = {session_id} group by responses.question_id, " \
-                f"responses.correct_answer"
-
-    try:
-        responses = pd.read_sql(query, conn)
-    except:
-        message = {"message": Const.DB_FAILURE}
-        return api_response.generate_response(status_code=500, response_body=message)
-
-    if responses.empty:
-        message = {"message": Const.NO_RESPONSES}
-        return api_response.generate_response(status_code=404, response_body=message)
-
-    data = pd.DataFrame()
-    if tag:
-        tags = list(responses['tag'].unique())
-        for tag in tags:
-            temp = helper.analysis(tag, responses, 'tag')
-            data = pd.concat([data, temp])
-    else:
-        questions = list(responses['description'].unique())
-        for question in questions:
-            temp = helper.analysis(question, responses, 'description')
-            data = pd.concat([data, temp])
-
-    avg_time = np.nansum(data['avg_time'])
-    count = np.nansum(data['count'])
-    data = data.to_json(orient='records')
-
-    body = {"data": data, "count": count, "avg_time": avg_time}
-
-    return api_response.generate_response(status_code=200, response_body=body)
+    return api_response.generate_response(status_code=200, response_body=students)

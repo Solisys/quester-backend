@@ -4,6 +4,7 @@ from urllib import response
 import requests
 import jwt
 import logging
+
 import sys
 import pandas as pd
 
@@ -66,6 +67,8 @@ def lambda_handler(event, context):
     if sessions.empty:
         message = {"message": Const.NO_RESPONSES}
         return api_response.generate_response(status_code=404, response_body=message)
+
+    sessions['created_on'] = sessions['created_on'].astype(str)
 
     result = sessions.to_dict('records')
 

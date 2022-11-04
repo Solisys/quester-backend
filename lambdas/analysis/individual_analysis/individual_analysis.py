@@ -14,7 +14,7 @@ from utils.constants import Const
 from utils import generate_response as api_response
 from utils import generate_traceback as api_traceback
 from utils.global_config import AuthConfig
-import session_analysis_helper as helper
+import individual_analysis_helper as helper
 from utils.authentication import authenticate
 
 rds_host = AuthConfig.database['rds_host']
@@ -55,6 +55,7 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=404, response_body=message)
 
     result = user.to_dict('records')
+    teacher_id = result[0]['user_id']
 
     if result[0]['role'] == 'student':
         message = {"message": Const.INVALID_USER}
@@ -75,33 +76,21 @@ def lambda_handler(event, context):
             logger.debug(result)
             return api_response.generate_response(status_code=400, response_body=result)
 
-    secret = body['sessionSecret']
+    student_id = body['studentId']
     tag = body.get('tag', None)
 
-    query = f"select * from sys.sessions where secret = '{secret}'"
-
-    try:
-        session = pd.read_sql(query, conn)
-    except:
-        message = {"message": Const.DB_FAILURE}
-        return api_response.generate_response(status_code=500, response_body=message)
-
-    if session.empty:
-        message = {"message": Const.INVALID_SESSION}
-        return api_response.generate_response(status_code=404, response_body=message)
-
-    session_id = session['session_id'].values[0]
+    query = f"select * from sys.responses where user_id = '{student_id}'"
 
     if tag:
         query = f"select questions.tag, responses.correct_answer, count(responses.correct_answer) as count, " \
                 f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where questions.session_id = {session_id} group by questions.tag, " \
-                f"responses.correct_answer"
+                f"questions.question_id where responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
+                f"group by questions.tag, responses.correct_answer"
     else:
-        query = f"select questions.description, responses.correct_answer, count(responses.correct_answer) as count, " \
+        query = f"select sessions.secret, responses.correct_answer, count(responses.correct_answer) as count, " \
                 f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where questions.session_id = {session_id} group by responses.question_id, " \
-                f"responses.correct_answer"
+                f"questions.question_id where responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
+                f"group by sessions.session_id, responses.correct_answer "
 
     try:
         responses = pd.read_sql(query, conn)
@@ -120,9 +109,9 @@ def lambda_handler(event, context):
             temp = helper.analysis(tag, responses, 'tag')
             data = pd.concat([data, temp])
     else:
-        questions = list(responses['description'].unique())
+        questions = list(responses['secret'].unique())
         for question in questions:
-            temp = helper.analysis(question, responses, 'description')
+            temp = helper.analysis(question, responses, 'secret')
             data = pd.concat([data, temp])
 
     avg_time = np.nansum(data['avg_time'])
