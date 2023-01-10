@@ -79,17 +79,19 @@ def lambda_handler(event, context):
     student_id = body['studentId']
     tag = body.get('tag', None)
 
-    query = f"select * from sys.responses where user_id = '{student_id}'"
+    query = f"select * from sys.responses where user_id = {student_id}"
 
     if tag:
         query = f"select questions.tag, responses.correct_answer, count(responses.correct_answer) as count, " \
                 f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
+                f"questions.question_id left join sys.sessions on sessions.session_id = questions.session_id where " \
+                f"responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
                 f"group by questions.tag, responses.correct_answer"
     else:
         query = f"select sessions.secret, responses.correct_answer, count(responses.correct_answer) as count, " \
                 f"avg(responses.time) as time from sys.responses left join sys.questions on responses.question_id = " \
-                f"questions.question_id where responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
+                f"questions.question_id left join sys.sessions on sessions.session_id = questions.session_id where " \
+                f"responses.user_id = {student_id} and sessions.user_id = {teacher_id} " \
                 f"group by sessions.session_id, responses.correct_answer "
 
     try:
