@@ -98,7 +98,7 @@ def lambda_handler(event, context):
 
     if session.empty:
         message = {"message": Const.NO_RESPONSES}
-        return api_response.generate_response(status_code=404, response_body=message)
+        return api_response.generate_response(status_code=401, response_body=message)
 
     session = session.to_dict('records')
     session_id = session[0]['session_id']
