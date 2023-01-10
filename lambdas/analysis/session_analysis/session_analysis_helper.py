@@ -27,8 +27,8 @@ def validate_payload(payload):
 def analysis(check, responses, category):
     temp = pd.DataFrame([check], columns=[category])
     correct = responses[(responses[category] == check) & (responses['correct_answer'] == 1)]
-    correct.reset_index(inplace = True)
-    incorrect = responses[(responses[category] == check) & (responses['incorrect_answer'] == 0)]
+    correct.reset_index(inplace=True)
+    incorrect = responses[(responses[category] == check) & (responses['correct_answer'] == 0)]
     incorrect.reset_index(inplace=True)
     if not correct.empty:
         temp['correct'] = int(correct['count'])
