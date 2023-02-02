@@ -65,7 +65,7 @@ def lambda_handler(event, context):
 
     if tag.empty:
         message = {"message": Const.NO_RESPONSES}
-        return api_response.generate_response(status_code=404, response_body=message)
+        return api_response.generate_response(status_code=204, response_body=message)
 
     result = tag.to_dict('records')
 
