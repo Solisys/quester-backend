@@ -35,7 +35,6 @@ def lambda_handler(event, context):
 
     try:
         email = authenticate(jwt_token, conn)
-        print('done')
     except Exception as e:
         message = {"message": str(e)}
         return api_response.generate_response(status_code=401, response_body=message)
@@ -66,7 +65,7 @@ def lambda_handler(event, context):
 
     if sessions.empty:
         message = {"message": Const.NO_RESPONSES}
-        return api_response.generate_response(status_code=404, response_body=message)
+        return api_response.generate_response(status_code=204, response_body=message)
 
     sessions['created_on'] = sessions['created_on'].astype(str)
 
