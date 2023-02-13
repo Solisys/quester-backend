@@ -101,7 +101,8 @@ def lambda_handler(event, context):
         message = {"message": Const.UNAUTHORIZED}
         return api_response.generate_response(status_code=404, response_body=message)
 
-    query = f'select * from sys.responses join sys.questions where questions.session_id = {session_id} and responses.user_id = {user_id}'
+    query = f'select * from sys.responses join sys.questions on responses.question_id = questions.question_id where ' \
+            f'questions.session_id = {session_id} and responses.user_id = {user_id} '
     try:
         session = pd.read_sql(query, conn)
     except:
