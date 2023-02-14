@@ -110,8 +110,8 @@ def lambda_handler(event, context):
         return api_response.generate_response(status_code=500, response_body=message)
 
     if not session.empty:
-        message = {"message": "Already Answered"}
-        return api_response.generate_response(status_code=404, response_body=message)
+        message = {"message": "You've already attempted the quiz"}
+        return api_response.generate_response(status_code=409, response_body=message)
 
     query = f'select * from sys.questions where session_id = {session_id}'
     try:
